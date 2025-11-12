@@ -36,6 +36,10 @@ interface GraphActions {
   setDirection: (direction: CanvasDirection) => void;
   setViewPort: (ref: ViewPort) => void;
   setSelectedNode: (nodeData: NodeData) => void;
+  // update a node's fields (partial patch) and keep selectedNode in sync
+  updateNode: (nodeId: string | number, patch: Partial<NodeData>) => void;
+  // replace a node's text property
+  setNodeText: (nodeId: string | number, text: NodeData["text"]) => void;
   focusFirstNode: () => void;
   toggleFullscreen: (value: boolean) => void;
   zoomIn: () => void;
@@ -49,6 +53,18 @@ const useGraph = create<Graph & GraphActions>((set, get) => ({
   ...initialStates,
   clearGraph: () => set({ nodes: [], edges: [], loading: false }),
   setSelectedNode: nodeData => set({ selectedNode: nodeData }),
+  updateNode: (nodeId: string | number, patch: Partial<NodeData>) =>
+    set(state => {
+      const nodes = state.nodes.map(n => (n.id === nodeId ? { ...n, ...patch } : n));
+      const selectedNode = state.selectedNode?.id === nodeId ? { ...state.selectedNode, ...patch } : state.selectedNode;
+      return { nodes, selectedNode } as any;
+    }),
+  setNodeText: (nodeId: string | number, text: NodeData["text"]) =>
+    set(state => {
+      const nodes = state.nodes.map(n => (n.id === nodeId ? { ...n, text } : n));
+      const selectedNode = state.selectedNode?.id === nodeId ? { ...state.selectedNode, text } : state.selectedNode;
+      return { nodes, selectedNode } as any;
+    }),
   setGraph: (data, options) => {
     const { nodes, edges } = parser(data ?? useJson.getState().json);
 

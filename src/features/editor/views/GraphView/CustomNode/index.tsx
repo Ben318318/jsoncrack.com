@@ -47,7 +47,11 @@ const CustomNodeWrapper = (nodeProps: NodeProps<NodeData>) => {
       }}
     >
       {({ node, x, y }) => {
-        const hasKey = nodeProps.properties.text[0].key;
+        // guard against missing properties/text introduced by edits
+        const textArr = Array.isArray(nodeProps?.properties?.text) ? nodeProps.properties.text : undefined;
+        const first = textArr && textArr.length > 0 ? textArr[0] : undefined;
+        const hasKey = !!first?.key;
+
         if (!hasKey) return <TextNode node={nodeProps.properties as NodeData} x={x} y={y} />;
 
         return <ObjectNode node={node as NodeData} x={x} y={y} />;
